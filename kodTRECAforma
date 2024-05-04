@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Biblioteka
+{
+    public partial class Form3 : Form
+    {
+        public string korime;
+        public Form3(string korime)
+        {
+            InitializeComponent();
+            this.korime = korime;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+            SqlConnection con = new SqlConnection(cs);
+            con.Open();
+            SqlCommand cmd2 = new SqlCommand("select * from knjiga where knjigaID=@knjigaID", con);
+            cmd2.Parameters.AddWithValue("knjigaID", textBox1.Text);
+            SqlDataReader dr= cmd2.ExecuteReader();
+            if (dr.Read())
+            {
+                MessageBox.Show("Knjiga pod tom sifrom je vec iznajmljena, nemamo vise na stanju");
+                con.Close();
+                textBox1.Text = "";
+                textBox2.Text = "";
+                textBox3.Text = "";
+            }
+            else
+            {
+                con.Close();
+                DateTime vreme = DateTime.Now;
+                DateTime rok = vreme.AddDays(14);
+                con.Open();
+                SqlCommand cmd = new SqlCommand("insert into knjiga values(@knjigaID,@naslov,@autor,@vreme,@rok)"
+                                                + " insert into korisnik_knjiga values(@username,@knjigaID)", con);
+                cmd.Parameters.AddWithValue("knjigaID", textBox1.Text);
+                cmd.Parameters.AddWithValue("naslov", textBox2.Text);
+                cmd.Parameters.AddWithValue("autor", textBox3.Text);
+                cmd.Parameters.AddWithValue("username", korime);
+                cmd.Parameters.AddWithValue("vreme", vreme);
+                cmd.Parameters.AddWithValue("rok", rok);
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Uspesno iznajmljena knjiga");
+                textBox1.Text = "";
+                textBox2.Text = "";
+                textBox3.Text = "";
+                con.Close();
+            }
+            
+        }
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            label12.Text = $"{korime}";
+            DateTime datum = DateTime.Today.AddDays(14);
+            label5.Text = $"{DateTime.Today.AddDays(14).ToShortDateString()}";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+            SqlConnection con = new SqlConnection(cs);
+            con.Open();
+            SqlCommand cmd = new SqlCommand("delete from korisnik_knjiga where knjigaID=@knjigaID and username=@ime"
+                                             +" delete from knjiga where knjigaID=@knjigaID", con);
+            cmd.Parameters.AddWithValue("knjigaID",textBox4.Text);
+            cmd.Parameters.AddWithValue("ime", korime);
+            cmd.ExecuteNonQuery();
+            con.Close();
+            MessageBox.Show("Knjiga uspesno vracena, hvala!");
+            textBox4.Text = "";
+        }
+        private void button3_click(object sender, EventArgs e)
+        {
+            Hide();
+            Zaduzenja zad = new Zaduzenja(korime);
+            zad.ShowDialog();
+            Close();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Hide();
+            Zaduzenja zad = new Zaduzenja(korime);
+            zad.ShowDialog();
+            Close();
+        }
+    }
+}
