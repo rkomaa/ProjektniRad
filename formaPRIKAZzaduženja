@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Linq;
+using System.Security;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Biblioteka
+{
+    public partial class Zaduzenja : Form
+    {
+        public string username;
+        public Zaduzenja(string korime)
+        {
+            InitializeComponent();
+            this.username= korime;
+        }
+
+        private void Zaduzenja_Load(object sender, EventArgs e)
+        {
+            string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+            SqlConnection con = new SqlConnection(cs);
+            con.Open();
+            SqlCommand cmd = new SqlCommand("select  kk.username,kn.knjigaID,kn.naslov,kn.autor,kn.datum_izdavanja,kn.rok_predaje"
+                                            + " from knjiga as kn"
+                                            + " join korisnik_knjiga as kk"
+                                            + " on kn.knjigaID=kk.knjigaID and kk.username=@ime", con);
+            cmd.Parameters.AddWithValue("ime",username);
+            DataTable t = new DataTable();
+            SqlDataAdapter ad = new SqlDataAdapter(cmd);
+            ad.Fill(t);
+            dataGridView1.DataSource = t;
+            
+
+            SqlCommand cmd2 = new SqlCommand("select kn.naslov"
+                                             + " from knjiga as kn"
+                                             + " join korisnik_knjiga as kk"
+                                             + " on kn.knjigaID=kk.knjigaID and kk.username=@ime2", con);
+            cmd2.Parameters.AddWithValue("ime2", username);
+            listBox1.Items.Clear();
+            SqlDataReader dr=cmd2.ExecuteReader();
+            while (dr.Read())
+            {
+                try
+                {
+                    Knjiga knjiga = new Knjiga(
+                            dr.GetString(0)
+                            
+                        );
+                    listBox1.Items.Add(knjiga);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            con.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string naziv = listBox1.SelectedItem.ToString();
+            string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;MultipleActiveResultSets=True;";
+            SqlConnection con = new SqlConnection(cs);
+            con.Open();
+            SqlCommand cmd2 = new SqlCommand("select k.rok_predaje"
+                                              + " from knjiga as k"
+                                              + " join korisnik_knjiga as kk"
+                                              + " on k.naslov=@naslov and k.knjigaID=kk.knjigaID and kk.username=@ime", con);
+            cmd2.Parameters.AddWithValue("naslov", naziv);
+            cmd2.Parameters.AddWithValue("ime", username);
+            DateTime datum = DateTime.UtcNow;
+            SqlDataReader dr3 = cmd2.ExecuteReader();
+            while (dr3.Read())
+            {
+                datum = dr3.GetDateTime(0);
+            }
+            DateTime produzeni = datum.AddDays(14);
+            
+            SqlCommand cmd = new SqlCommand("update knjiga"
+                                            + " set rok_predaje=@produzeni_rok"
+                                            + " where naslov=@naslov",con);
+            cmd.Parameters.AddWithValue("ime2", username);
+            cmd.Parameters.AddWithValue("produzeni_rok",produzeni);
+            cmd.Parameters.AddWithValue("naslov", naziv);
+            cmd.ExecuteNonQuery();
+            MessageBox.Show($"Uspesno produzen rok za knjigu {naziv}");
+            con.Close();
+
+            string cs2 = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+            SqlConnection con2 = new SqlConnection(cs2);
+            con2.Open();
+            SqlCommand cmd3 = new SqlCommand("select  kk.username,kn.knjigaID,kn.naslov,kn.autor,kn.datum_izdavanja,kn.rok_predaje"
+                                            + " from knjiga as kn"
+                                            + " join korisnik_knjiga as kk"
+                                            + " on kn.knjigaID=kk.knjigaID and kk.username=@ime", con2);
+            cmd3.Parameters.AddWithValue("ime", username);
+            DataTable t = new DataTable();
+            SqlDataAdapter ad = new SqlDataAdapter(cmd3);
+            ad.Fill(t);
+            dataGridView1.DataSource = t;
+        }
+        
+    }
+}
