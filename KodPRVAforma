@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Biblioteka
+{
+    public partial class Login : Form
+    {
+        public Login()
+        {
+            InitializeComponent();
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Form2 registracija = new Form2();
+            Hide();
+            registracija.ShowDialog();
+            Close();           
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (textBox1.Text != "" && textBox2.Text != "")
+                {
+                    string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+                    SqlConnection con = new SqlConnection(cs);
+                    con.Open();
+                    SqlCommand cmd = new SqlCommand("select * from korisnik where username=@korime AND lozinka=@lozinka", con);
+                    cmd.Parameters.AddWithValue("@korime", textBox1.Text);
+                    cmd.Parameters.AddWithValue("@lozinka", textBox2.Text);
+                    SqlDataReader r = cmd.ExecuteReader();
+                    if (r.Read())
+                    {
+                        MessageBox.Show("Uspesno prijavljivanje");
+                        Hide();
+                        Form3 forma3 = new Form3(textBox1.Text);
+                        forma3.ShowDialog();
+                        Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Uneti podaci nisu ispravni");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+        }
+    }
+}
