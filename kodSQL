@@ -1,0 +1,24 @@
+create table korisnik(
+	ime nvarchar(25) not null,
+	prezime nvarchar(25) not null,
+	broj_telefona nvarchar(20),
+	username nvarchar(25) primary key not null,
+	lozinka nvarchar(25) not null
+)
+
+create table knjiga(
+	knjigaID int primary key not null,
+	naslov nvarchar(50) not null,
+	autor nvarchar(50) not null,
+	datum_izdavanja date not null,
+	rok_predaje date
+)
+
+create table korisnik_knjiga(
+	username nvarchar(25) foreign key references korisnik(username),
+	knjigaID int foreign key references knjiga(knjigaID)
+	
+)
+
+alter table korisnik
+drop column broj_telefona;
