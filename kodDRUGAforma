@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Biblioteka
+{
+    public partial class Form2 : Form
+    {
+        public Form2()
+        {
+            InitializeComponent();
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if(textBox3.Text==textBox4.Text && textBox1.Text!="" && textBox2.Text!="" && textBox5.Text!="" && textBox3.Text!="" && textBox4.Text!="")
+            {
+                string cs = "Data Source=DESKTOP-BKDB214\\SQLEXPRESS01;Initial Catalog=Biblioteka;Integrated Security=True;";
+                SqlConnection con=new SqlConnection(cs);
+                con.Open();
+                SqlCommand cmd=new SqlCommand("insert into korisnik values(@ime,@prezime,@korime,@lozink)",con);
+                cmd.Parameters.AddWithValue("ime", textBox1.Text);
+                cmd.Parameters.AddWithValue("prezime", textBox2.Text);
+                cmd.Parameters.AddWithValue("korime", textBox5.Text);
+                cmd.Parameters.AddWithValue("lozink", textBox3.Text);
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Uspesna registracija");
+                Hide();
+                Form3 form3 = new Form3(textBox5.Text);
+                form3.ShowDialog();
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("Uneti podaci nisu ispravni (proveriti lozinku i da li je sve uneto)");
+            }
+            
+
+        }
+
+        
+    }
+}
